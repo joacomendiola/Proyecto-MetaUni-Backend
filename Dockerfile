@@ -1,19 +1,15 @@
-# Etapa 1: Construcción con Maven
+# Etapa 1: Build con Maven
 FROM eclipse-temurin:17-jdk AS build
-
 WORKDIR /app
 COPY . .
-
-# Dar permisos al wrapper
-RUN chmod +x mvnw
-
 RUN ./mvnw clean package -DskipTests
 
-# Etapa 2: Imagen final ligera con solo el JRE
+# Etapa 2: Imagen final ligera
 FROM eclipse-temurin:17-jre
 WORKDIR /app
-
 COPY --from=build /app/target/*.jar app.jar
 
+# Render necesita el puerto expuesto
 EXPOSE 8080
+
 ENTRYPOINT ["java", "-jar", "app.jar"]
