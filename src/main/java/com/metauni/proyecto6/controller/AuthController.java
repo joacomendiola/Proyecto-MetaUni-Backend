@@ -5,6 +5,7 @@ import com.metauni.proyecto6.repository.UsuarioRepository;
 import com.metauni.proyecto6.security.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
@@ -39,6 +40,10 @@ public class AuthController {
             );
         }
         throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Credenciales inválidas");
+    }
+    @GetMapping("/test-cors")
+    public ResponseEntity<String> testCors() {
+        return ResponseEntity.ok("CORS OK");
     }
 
 }
