@@ -1,14 +1,12 @@
-# Imagen oficial de Maven con JDK 17
-FROM maven:3.9.6-eclipse-temurin-17
-
+# Etapa 1: build con Maven
+FROM amazoncorretto:17 as build
 WORKDIR /app
 COPY . .
+RUN ./mvnw clean package -DskipTests
 
-# Compila y empaqueta
-RUN mvn clean package -DskipTests
-
-# Render necesita el puerto expuesto
+# Etapa 2: runtime
+FROM amazoncorretto:17-alpine
+WORKDIR /app
+COPY --from=build /app/target/*.jar app.jar
 EXPOSE 8080
-
-# Arranca la app
-CMD ["java", "-jar", "target/proyecto6-metauni-0.0.1-SNAPSHOT.jar"]
+ENTRYPOINT ["java", "-jar", "app.jar"]
