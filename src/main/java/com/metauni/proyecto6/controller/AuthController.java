@@ -4,8 +4,10 @@ import com.metauni.proyecto6.model.Usuario;
 import com.metauni.proyecto6.repository.UsuarioRepository;
 import com.metauni.proyecto6.security.JwtUtil;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Map;
 
@@ -36,6 +38,7 @@ public class AuthController {
                     "rol", u.getRol()
             );
         }
-        throw new RuntimeException("Credenciales inválidas");
+        throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Credenciales inválidas");
     }
+
 }
