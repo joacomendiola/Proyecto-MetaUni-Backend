@@ -5,8 +5,6 @@ target/
 !**/src/test/**/target/
 
 ### Configuración sensible ###
-application.properties
-application.yml
 *.log
 
 ### STS ###
