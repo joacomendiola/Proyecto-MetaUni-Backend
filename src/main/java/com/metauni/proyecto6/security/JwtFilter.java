@@ -28,7 +28,7 @@ public class JwtFilter extends OncePerRequestFilter {
         String path = request.getServletPath();
 
         // 🔹 Saltar validación de token para /auth/**
-        if (path.startsWith("/auth/")) {
+        if (path.contains("/api/auth")) {
             filterChain.doFilter(request, response);
             return;
         }
