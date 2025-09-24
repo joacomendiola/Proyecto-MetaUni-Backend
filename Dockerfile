@@ -1,11 +1,11 @@
 # Etapa 1: Build con Maven
-FROM eclipse-temurin:17-jdk AS build
+FROM openjdk:17-jdk AS build
 WORKDIR /app
 COPY . .
 RUN ./mvnw clean package -DskipTests
 
 # Etapa 2: Imagen final ligera
-FROM eclipse-temurin:17-jre
+FROM openjdk:17-jdk-slim
 WORKDIR /app
 COPY --from=build /app/target/*.jar app.jar
 
