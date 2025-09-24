@@ -30,7 +30,17 @@ public class AuthController {
 
     @PostMapping("/login")
     public Map<String, String> login(@RequestBody Usuario usuario) {
+        System.out.println("🔐 Intentando login con: " + usuario.getEmail());
+
         Usuario u = usuarioRepo.findByEmail(usuario.getEmail());
+        if (u == null) {
+            System.out.println("❌ Usuario no encontrado");
+        } else if (!passwordEncoder.matches(usuario.getPassword(), u.getPassword())) {
+            System.out.println("❌ Contraseña incorrecta");
+        } else {
+            System.out.println("✅ Login exitoso");
+        }
+
         if (u != null && passwordEncoder.matches(usuario.getPassword(), u.getPassword())) {
             String token = jwtUtil.generateToken(u.getEmail(), u.getRol());
             return Map.of(
@@ -41,6 +51,7 @@ public class AuthController {
         }
         throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Credenciales inválidas");
     }
+
     @GetMapping("/test-cors")
     public ResponseEntity<String> testCors() {
         return ResponseEntity.ok("CORS OK");
