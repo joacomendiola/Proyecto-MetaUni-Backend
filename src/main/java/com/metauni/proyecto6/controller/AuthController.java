@@ -30,7 +30,11 @@ public class AuthController {
         Usuario u = usuarioRepo.findByEmail(usuario.getEmail());
         if (u != null && passwordEncoder.matches(usuario.getPassword(), u.getPassword())) {
             String token = jwtUtil.generateToken(u.getEmail(), u.getRol());
-            return Map.of("token", token);
+            return Map.of(
+                    "token", token,
+                    "email", u.getEmail(),
+                    "rol", u.getRol()
+            );
         }
         throw new RuntimeException("Credenciales inválidas");
     }
