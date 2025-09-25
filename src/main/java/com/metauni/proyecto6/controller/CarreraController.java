@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.security.Principal;
+import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -29,13 +30,14 @@ public class CarreraController {
         }
 
         carrera.setUsuario(usuario);
-
-        // inicializar valores si no vienen
         if (carrera.getTotalMaterias() == null) {
             carrera.setTotalMaterias(0);
         }
         if (carrera.getColorBarra() == null) {
-            carrera.setColorBarra("#5b21b6"); // violeta fuerte como default
+            carrera.setColorBarra("#6366f1");
+        }
+        if (carrera.getMaterias() == null) {
+            carrera.setMaterias(new ArrayList<>()); //  evita null
         }
 
         return carreraRepo.save(carrera);
