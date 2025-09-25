@@ -17,11 +17,19 @@ public class JwtUtil {
 
     // Generar token
     public String generateToken(String email, String rol) {
+        //  Asegurar prefijo ROLE_
+        if (rol != null && !rol.startsWith("ROLE_")) {
+            rol = "ROLE_" + rol;
+        }
+        if (rol == null) {
+            rol = "ROLE_USER"; // valor por defecto
+        }
+
         return Jwts.builder()
                 .setSubject(email)
-                .claim("rol", rol)
+                .claim("rol", rol)  // Guardamos el rol con formato correcto
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60)) // 1h
+                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60)) // 1 hora
                 .signWith(SECRET, SignatureAlgorithm.HS256)
                 .compact();
     }

@@ -20,7 +20,7 @@ import java.util.List;
 @Component
 public class JwtFilter extends OncePerRequestFilter {
 
-    private final String SECRET = "metauni_secret_key";
+    private final String SECRET = "metauni_secret_key_metauni_secret_key"; // misma que en JwtUtil
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
@@ -81,5 +81,6 @@ public class JwtFilter extends OncePerRequestFilter {
         filterChain.doFilter(request, response);
     }
 }
+
 
 
