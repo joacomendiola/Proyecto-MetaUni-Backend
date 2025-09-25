@@ -29,8 +29,8 @@ public class JwtFilter extends OncePerRequestFilter {
 
         String path = request.getServletPath();
 
-        // 🔓 Saltamos validación en endpoints de auth
-        if (path.contains("/api/auth")) {
+        //  Dejar libre los endpoints de auth
+        if (path.startsWith("/api/auth")) {
             filterChain.doFilter(request, response);
             return;
         }
@@ -49,19 +49,25 @@ public class JwtFilter extends OncePerRequestFilter {
                 String email = claims.getSubject();
                 String rol = claims.get("rol", String.class);
 
-                // ✅ Convertimos rol en autoridad de Spring Security
-                List<GrantedAuthority> authorities =
-                        List.of(new SimpleGrantedAuthority(rol));
+                if (email != null) {
+                    List<GrantedAuthority> authorities =
+                            List.of(new SimpleGrantedAuthority(rol != null ? rol : "ROLE_USER"));
 
-                UsernamePasswordAuthenticationToken auth =
-                        new UsernamePasswordAuthenticationToken(email, null, authorities);
+                    UsernamePasswordAuthenticationToken auth =
+                            new UsernamePasswordAuthenticationToken(email, null, authorities);
 
-                auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                SecurityContextHolder.getContext().setAuthentication(auth);
+                    auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    SecurityContextHolder.getContext().setAuthentication(auth);
+                }
 
             } catch (Exception e) {
                 System.out.println("❌ Token inválido: " + e.getMessage());
+                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Token inválido");
+                return;
             }
+        } else {
+            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Falta token");
+            return;
         }
 
         filterChain.doFilter(request, response);
