@@ -15,6 +15,7 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.Arrays;
+import java.util.List;
 
 @Configuration
 public class WebSecurityConfig {
@@ -29,20 +30,15 @@ public class WebSecurityConfig {
     public SecurityFilterChain filterChain(org.springframework.security.config.annotation.web.builders.HttpSecurity http) throws Exception {
         http
                 .csrf(csrf -> csrf.disable())
+                .cors(cors -> {}) // habilita CORS
                 .authorizeHttpRequests(auth -> auth
-                        // 🔓 Permitir preflight CORS
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                        // 🔓 Permitir endpoints de autenticación sin token
                         .requestMatchers("/api/auth/**").permitAll()
-                        // 🔒 Todo lo demás requiere token válido
                         .anyRequest().authenticated()
                 )
-                // 🔒 No guardar sesión en server → JWT es stateless
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                // 🔓 Configuración CORS
-                .cors(cors -> cors.configurationSource(corsConfigurationSource()));
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
-        // ✅ Enganchar JwtFilter ANTES del filtro de autenticación por usuario/contraseña
+        // ✅ Enganchar JwtFilter
         http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
@@ -61,13 +57,13 @@ public class WebSecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(Arrays.asList(
-                "https://metauni.onrender.com",          // frontend en Render
-                "https://proyecto-metauni.onrender.com",// dominio alternativo frontend
-                "http://localhost:3000"                 // frontend local
+        config.setAllowedOrigins(List.of(
+                "https://metauni.onrender.com",          // tu frontend en Render
+                "https://proyecto-metauni.onrender.com", // dominio alternativo
+                "http://localhost:3000"                  // dev local
         ));
         config.setAllowedMethods(Arrays.asList("GET","POST","PUT","DELETE","OPTIONS"));
-        config.setAllowedHeaders(Arrays.asList("Authorization","Content-Type","X-Requested-With","Accept"));
+        config.setAllowedHeaders(Arrays.asList("Authorization","Content-Type"));
         config.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
