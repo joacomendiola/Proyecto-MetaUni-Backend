@@ -49,9 +49,17 @@ public class JwtFilter extends OncePerRequestFilter {
                 String email = claims.getSubject();
                 String rol = claims.get("rol", String.class);
 
+                //  Forzar prefijo ROLE_
+                if (rol != null && !rol.startsWith("ROLE_")) {
+                    rol = "ROLE_" + rol;
+                }
+                if (rol == null) {
+                    rol = "ROLE_USER";
+                }
+
                 if (email != null) {
                     List<GrantedAuthority> authorities =
-                            List.of(new SimpleGrantedAuthority(rol != null ? rol : "ROLE_USER"));
+                            List.of(new SimpleGrantedAuthority(rol));
 
                     UsernamePasswordAuthenticationToken auth =
                             new UsernamePasswordAuthenticationToken(email, null, authorities);
@@ -73,4 +81,5 @@ public class JwtFilter extends OncePerRequestFilter {
         filterChain.doFilter(request, response);
     }
 }
+
 
