@@ -1,7 +1,6 @@
 package com.metauni.proyecto6.security;
 
 import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -18,7 +17,11 @@ import java.util.Collections;
 @Component
 public class JwtFilter extends OncePerRequestFilter {
 
-    private final String SECRET = "metauni_secret_key";
+    private final JwtUtil jwtUtil;
+
+    public JwtFilter(JwtUtil jwtUtil) {
+        this.jwtUtil = jwtUtil;
+    }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
@@ -27,8 +30,8 @@ public class JwtFilter extends OncePerRequestFilter {
 
         String path = request.getServletPath();
 
-        // 🔹 Saltar validación de token para /auth/**
-        if (path.contains("/api/auth")) {
+        // 🔹 Saltar validación para las rutas públicas
+        if (path.startsWith("/api/auth")) {
             filterChain.doFilter(request, response);
             return;
         }
@@ -39,13 +42,8 @@ public class JwtFilter extends OncePerRequestFilter {
             String token = header.substring(7);
 
             try {
-                Claims claims = Jwts.parser()
-                        .setSigningKey(SECRET)
-                        .parseClaimsJws(token)
-                        .getBody();
-
+                Claims claims = jwtUtil.extractClaims(token);
                 String email = claims.getSubject();
-                String rol = claims.get("rol", String.class);
 
                 UsernamePasswordAuthenticationToken auth =
                         new UsernamePasswordAuthenticationToken(email, null, Collections.emptyList());
@@ -54,7 +52,7 @@ public class JwtFilter extends OncePerRequestFilter {
                 SecurityContextHolder.getContext().setAuthentication(auth);
 
             } catch (Exception e) {
-                System.out.println("Token inválido: " + e.getMessage());
+                System.out.println("❌ Token inválido: " + e.getMessage());
             }
         }
 
