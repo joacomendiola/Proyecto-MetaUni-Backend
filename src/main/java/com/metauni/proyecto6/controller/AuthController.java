@@ -22,10 +22,19 @@ public class AuthController {
     private final JwtUtil jwtUtil;
 
     @PostMapping("/register")
-    public Usuario register(@RequestBody Usuario usuario) {
+    public Map<String, String> register(@RequestBody Usuario usuario) {
         usuario.setPassword(passwordEncoder.encode(usuario.getPassword()));
         usuario.setRol("ROLE_USER");
-        return usuarioRepo.save(usuario);
+        Usuario saved = usuarioRepo.save(usuario);
+
+        String token = jwtUtil.generateToken(saved.getEmail(), saved.getRol());
+
+        return Map.of(
+                "token", token,
+                "email", saved.getEmail(),
+                "rol", saved.getRol(),
+                "nombre", saved.getNombre() != null ? saved.getNombre() : ""
+        );
     }
 
     @PostMapping("/login")
