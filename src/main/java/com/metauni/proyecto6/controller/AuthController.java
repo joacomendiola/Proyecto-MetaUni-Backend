@@ -37,7 +37,8 @@ public class AuthController {
             return Map.of(
                     "token", token,
                     "email", u.getEmail(),
-                    "rol", u.getRol()
+                    "rol", u.getRol(),
+                    "nombre", u.getNombre() != null ? u.getNombre() : ""
             );
         }
         throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Credenciales inválidas");
