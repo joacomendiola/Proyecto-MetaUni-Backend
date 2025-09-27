@@ -1,5 +1,6 @@
 package com.metauni.proyecto6.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -22,8 +23,9 @@ public class Usuario {
     private String nombre;
     private String email;
     private String password;
-    private String rol; //ROLE_USER o ROLE_ADMIN
+    private String rol;
 
     @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore // ← EVITA REFERENCIA A CARRERAS
     private List<Carrera> carreras;
 }

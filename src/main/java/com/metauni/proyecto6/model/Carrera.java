@@ -1,5 +1,6 @@
 package com.metauni.proyecto6.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import java.util.List;
@@ -21,8 +22,10 @@ public class Carrera {
 
     @ManyToOne
     @JoinColumn(name = "usuario_id")
+    @JsonIgnore // ← EVITA REFERENCIA A USUARIO
     private Usuario usuario;
 
     @OneToMany(mappedBy = "carrera", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore // ← EVITA REFERENCIA A MATERIAS
     private List<Materia> materias;
 }

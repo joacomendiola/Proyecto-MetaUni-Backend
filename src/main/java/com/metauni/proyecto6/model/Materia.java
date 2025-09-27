@@ -1,5 +1,6 @@
 package com.metauni.proyecto6.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -19,5 +20,6 @@ public class Materia {
 
     @ManyToOne
     @JoinColumn(name = "carrera_id")
+    @JsonIgnore // ← EVITA REFERENCIA A CARRERA
     private Carrera carrera;
 }
