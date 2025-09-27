@@ -3,6 +3,7 @@ package com.metauni.proyecto6.controller;
 import com.metauni.proyecto6.model.Usuario;
 import com.metauni.proyecto6.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -25,8 +26,9 @@ public class UsuarioController {
     }
 
     @PutMapping("/{id}")
-    public Usuario editar(@PathVariable Long id, @RequestBody Usuario usuarioActualizado) {
+    public Usuario editar(@PathVariable Long id, @RequestBody Usuario usuarioActualizado, Authentication authentication) {
         System.out.println("🔍 UsuarioController - PUT /usuarios/" + id);
+        System.out.println("🔍 Usuario autenticado: " + authentication.getName());
         System.out.println("🔍 Datos recibidos: " + usuarioActualizado);
 
         try {
@@ -38,6 +40,12 @@ public class UsuarioController {
                         return new RuntimeException("Usuario no encontrado");
                     });
             System.out.println("✅ Usuario encontrado: " + usuarioExistente.getEmail());
+
+            // VERIFICACIÓN DE SEGURIDAD - USUARIO SOLO PUEDE EDITAR SU PROPIO PERFIL
+            if (!usuarioExistente.getEmail().equals(authentication.getName())) {
+                System.out.println("❌ Intento de editar perfil ajeno: " + authentication.getName() + " intenta editar " + usuarioExistente.getEmail());
+                throw new RuntimeException("No tienes permisos para editar este perfil");
+            }
 
             // Actualizar campos
             if (usuarioActualizado.getNombre() != null) {
