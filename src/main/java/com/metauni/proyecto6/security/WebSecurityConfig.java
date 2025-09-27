@@ -34,10 +34,10 @@ public class WebSecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers("/api/auth/**").permitAll()
-                        .requestMatchers(HttpMethod.PUT, "/api/usuarios/**").authenticated()
-                        .requestMatchers(HttpMethod.GET, "/api/carreras/**").authenticated()
-                        .requestMatchers(HttpMethod.POST, "/api/carreras").authenticated()
-                        .requestMatchers(HttpMethod.DELETE, "/api/carreras/**").authenticated()
+                        .requestMatchers(HttpMethod.PUT, "/usuarios/**").authenticated() // ← QUITAR /api/
+                        .requestMatchers(HttpMethod.GET, "/carreras/**").authenticated() // ← QUITAR /api/
+                        .requestMatchers(HttpMethod.POST, "/carreras").authenticated()   // ← QUITAR /api/
+                        .requestMatchers(HttpMethod.DELETE, "/carreras/**").authenticated() // ← QUITAR /api/
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
