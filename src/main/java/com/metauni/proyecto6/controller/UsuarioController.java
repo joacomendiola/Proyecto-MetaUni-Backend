@@ -25,9 +25,20 @@ public class UsuarioController {
     }
 
     @PutMapping("/{id}")
-    public Usuario editar(@PathVariable Long id, @RequestBody Usuario u) {
-        u.setId(id);
-        return usuarioRepo.save(u);
+    public Usuario editar(@PathVariable Long id, @RequestBody Usuario usuarioActualizado) {
+        Usuario usuarioExistente = usuarioRepo.findById(id)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        //  Actualizar solo los campos que vienen en el request
+        if (usuarioActualizado.getNombre() != null) {
+            usuarioExistente.setNombre(usuarioActualizado.getNombre());
+        }
+        if (usuarioActualizado.getEmail() != null) {
+            usuarioExistente.setEmail(usuarioActualizado.getEmail());
+        }
+
+        //  NO actualizar password ni rol aca
+        return usuarioRepo.save(usuarioExistente);
     }
 
     @DeleteMapping("/{id}")

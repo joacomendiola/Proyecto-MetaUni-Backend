@@ -33,7 +33,8 @@ public class AuthController {
                 "token", token,
                 "email", saved.getEmail(),
                 "rol", saved.getRol(),
-                "nombre", saved.getNombre() != null ? saved.getNombre() : ""
+                "nombre", saved.getNombre() != null ? saved.getNombre() : "",
+                "id", saved.getId().toString() //  Devolver el ID
         );
     }
 
@@ -47,7 +48,8 @@ public class AuthController {
                     "token", token,
                     "email", u.getEmail(),
                     "rol", u.getRol(),
-                    "nombre", u.getNombre() != null ? u.getNombre() : ""
+                    "nombre", u.getNombre() != null ? u.getNombre() : "",
+                    "id", u.getId().toString() // Devolver el ID
             );
         }
         throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Credenciales inválidas");
