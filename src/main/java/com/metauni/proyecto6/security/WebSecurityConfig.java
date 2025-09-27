@@ -33,11 +33,7 @@ public class WebSecurityConfig {
                 .cors(cors -> {}) // habilita CORS
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                        .requestMatchers("/api/auth/**").permitAll()
-                        .requestMatchers(HttpMethod.PUT, "/usuarios/**").authenticated() // ← QUITAR /api/
-                        .requestMatchers(HttpMethod.GET, "/carreras/**").authenticated() // ← QUITAR /api/
-                        .requestMatchers(HttpMethod.POST, "/carreras").authenticated()   // ← QUITAR /api/
-                        .requestMatchers(HttpMethod.DELETE, "/carreras/**").authenticated() // ← QUITAR /api/
+                        .requestMatchers("/api/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
