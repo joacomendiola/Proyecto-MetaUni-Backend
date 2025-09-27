@@ -31,27 +31,25 @@ public class JwtFilter extends OncePerRequestFilter {
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
 
-        // Log para diagnóstico
         System.out.println("🔍 JwtFilter - " + request.getMethod() + " " + request.getServletPath());
 
         // Dejar pasar preflight OPTIONS
         if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
-            System.out.println(" Pasando OPTIONS preflight");
+            System.out.println("✅ Pasando OPTIONS preflight");
             filterChain.doFilter(request, response);
             return;
         }
 
         String path = request.getServletPath();
 
-        // Dejar libre los endpoints de auth
-        if (path.startsWith("/api/auth") ||
-                path.startsWith("/api/usuarios") ||
-                path.startsWith("/api/carreras") ||
-                path.startsWith("/api/materias")) {
+        // Dejar libre SOLO endpoints públicos
+        if (path.startsWith("/api/auth")) {
+            System.out.println("✅ Pasando ruta pública: " + path);
             filterChain.doFilter(request, response);
             return;
         }
 
+        // Las demás rutas requieren autenticación
         String header = request.getHeader("Authorization");
         System.out.println("🔍 Authorization header: " + (header != null ? "PRESENTE" : "FALTANTE"));
 
