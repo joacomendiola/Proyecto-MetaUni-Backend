@@ -31,28 +31,35 @@ public class JwtFilter extends OncePerRequestFilter {
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
 
-        //Dejar pasar preflight OPTIONS
+        // Log para diagnóstico
+        System.out.println("🔍 JwtFilter - " + request.getMethod() + " " + request.getServletPath());
+
+        // Dejar pasar preflight OPTIONS
         if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
+            System.out.println(" Pasando OPTIONS preflight");
             filterChain.doFilter(request, response);
             return;
         }
 
         String path = request.getServletPath();
 
-        //Dejar libre los endpoints de auth
+        // Dejar libre los endpoints de auth
         if (path.startsWith("/api/auth") ||
                 path.startsWith("/usuarios") ||
                 path.startsWith("/carreras") ||
                 path.startsWith("/materias")) {
+            System.out.println(" Pasando ruta permitida: " + path);
             filterChain.doFilter(request, response);
             return;
         }
 
         String header = request.getHeader("Authorization");
+        System.out.println("🔍 Authorization header: " + (header != null ? "PRESENTE" : "FALTANTE"));
 
-        //Si no hay token, dejar seguir (NO responder 401)
+        // Si no hay token, dejar seguir (NO responder 401)
         if (header == null || !header.startsWith("Bearer ")) {
-            filterChain.doFilter(request, response); // ← Cambio crucial
+            System.out.println("ℹ️  No hay token, dejando seguir");
+            filterChain.doFilter(request, response);
             return;
         }
 
@@ -67,7 +74,7 @@ public class JwtFilter extends OncePerRequestFilter {
             String email = claims.getSubject();
             String rol = claims.get("rol", String.class);
 
-            //Forzar prefijo ROLE_
+            // Forzar prefijo ROLE_
             if (rol != null && !rol.startsWith("ROLE_")) {
                 rol = "ROLE_" + rol;
             }
@@ -84,6 +91,7 @@ public class JwtFilter extends OncePerRequestFilter {
 
                 auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(auth);
+                System.out.println("✅ Usuario autenticado: " + email + " con rol: " + rol);
             }
 
         } catch (Exception e) {
