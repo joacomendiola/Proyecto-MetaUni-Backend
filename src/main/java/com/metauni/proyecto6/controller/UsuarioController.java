@@ -3,13 +3,16 @@ package com.metauni.proyecto6.controller;
 import com.metauni.proyecto6.model.Usuario;
 import com.metauni.proyecto6.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.Authentication;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.core.Authentication;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
-@RequestMapping("/api/usuarios")
+@RequestMapping("/usuarios")
 @RequiredArgsConstructor
 public class UsuarioController {
 
@@ -26,45 +29,56 @@ public class UsuarioController {
     }
 
     @PutMapping("/{id}")
-    public Usuario editar(@PathVariable Long id, @RequestBody Usuario usuarioActualizado, Authentication authentication) {
-        System.out.println("🔍 UsuarioController - PUT /usuarios/" + id);
+    public ResponseEntity<?> editar(@PathVariable Long id,
+                                    @RequestBody Usuario usuarioActualizado,
+                                    Authentication authentication) {
+
+        System.out.println("🔍 PUT /usuarios/" + id);
         System.out.println("🔍 Usuario autenticado: " + authentication.getName());
-        System.out.println("🔍 Datos recibidos: " + usuarioActualizado);
 
         try {
-            // CON LOGS DE BÚSQUEDA
-            System.out.println("🔍 Buscando usuario con ID: " + id);
+            // 1. Buscar usuario existente
             Usuario usuarioExistente = usuarioRepo.findById(id)
-                    .orElseThrow(() -> {
-                        System.out.println("❌ NO se encontró usuario con ID: " + id);
-                        return new RuntimeException("Usuario no encontrado");
-                    });
-            System.out.println("✅ Usuario encontrado: " + usuarioExistente.getEmail());
+                    .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
-            // VERIFICACIÓN DE SEGURIDAD - USUARIO SOLO PUEDE EDITAR SU PROPIO PERFIL
+            // 2. VERIFICAR que el usuario autenticado edite solo su perfil
             if (!usuarioExistente.getEmail().equals(authentication.getName())) {
-                System.out.println("❌ Intento de editar perfil ajeno: " + authentication.getName() + " intenta editar " + usuarioExistente.getEmail());
-                throw new RuntimeException("No tienes permisos para editar este perfil");
+                System.out.println("❌ No autorizado: " + authentication.getName() + " intenta editar " + usuarioExistente.getEmail());
+                return ResponseEntity.status(403).body("No autorizado");
             }
 
-            // Actualizar campos
+            // 3. Verificar si el email cambió
+            boolean emailCambiado = false;
+            String emailViejo = usuarioExistente.getEmail();
+
             if (usuarioActualizado.getNombre() != null) {
-                System.out.println("📝 Actualizando nombre: " + usuarioActualizado.getNombre());
                 usuarioExistente.setNombre(usuarioActualizado.getNombre());
             }
-            if (usuarioActualizado.getEmail() != null) {
-                System.out.println("📝 Actualizando email: " + usuarioActualizado.getEmail());
+
+            if (usuarioActualizado.getEmail() != null &&
+                    !usuarioActualizado.getEmail().equals(emailViejo)) {
                 usuarioExistente.setEmail(usuarioActualizado.getEmail());
+                emailCambiado = true;
             }
 
-            Usuario guardado = usuarioRepo.save(usuarioExistente);
-            System.out.println("✅ Usuario guardado exitosamente");
-            return guardado;
+            // 4. Guardar cambios
+            Usuario usuarioGuardado = usuarioRepo.save(usuarioExistente);
+
+            // 5. Preparar respuesta
+            Map<String, Object> response = new HashMap<>();
+            response.put("usuario", usuarioGuardado);
+
+            // 6. Si cambió el email, avisar al frontend que necesita nuevo token
+            if (emailCambiado) {
+                response.put("emailCambiado", true);
+                response.put("mensaje", "Email actualizado - debes volver a login");
+            }
+
+            return ResponseEntity.ok(response);
 
         } catch (Exception e) {
-            System.out.println("❌ Error en UsuarioController: " + e.getMessage());
-            e.printStackTrace();
-            throw e;
+            System.out.println("❌ Error: " + e.getMessage());
+            return ResponseEntity.status(500).body("Error interno");
         }
     }
 
