@@ -15,7 +15,7 @@ import java.security.Principal;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/materias") // ✅ prefijo api
+@RequestMapping("/api/materias")
 @RequiredArgsConstructor
 public class MateriaController {
 

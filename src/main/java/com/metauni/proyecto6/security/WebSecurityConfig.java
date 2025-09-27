@@ -34,7 +34,16 @@ public class WebSecurityConfig {
                 .cors(cors -> {})
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                        .requestMatchers("/**").permitAll()
+                        .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers(HttpMethod.PUT, "/api/usuarios/**").authenticated() // ← CON /api/
+                        .requestMatchers(HttpMethod.GET, "/api/carreras/**").authenticated() // ← CON /api/
+                        .requestMatchers(HttpMethod.POST, "/api/carreras").authenticated()   // ← CON /api/
+                        .requestMatchers(HttpMethod.DELETE, "/api/carreras/**").authenticated() // ← CON /api/
+                        .requestMatchers(HttpMethod.GET, "/api/materias/**").authenticated() // ← NUEVO
+                        .requestMatchers(HttpMethod.POST, "/api/materias/**").authenticated() // ← NUEVO
+                        .requestMatchers(HttpMethod.PUT, "/api/materias/**").authenticated() // ← NUEVO
+                        .requestMatchers(HttpMethod.DELETE, "/api/materias/**").authenticated() // ← NUEVO
+                        .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 

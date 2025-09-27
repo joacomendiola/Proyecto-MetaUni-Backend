@@ -45,10 +45,9 @@ public class JwtFilter extends OncePerRequestFilter {
 
         // Dejar libre los endpoints de auth
         if (path.startsWith("/api/auth") ||
-                path.startsWith("/usuarios") ||
-                path.startsWith("/carreras") ||
-                path.startsWith("/materias")) {
-            System.out.println(" Pasando ruta permitida: " + path);
+                path.startsWith("/api/usuarios") ||
+                path.startsWith("/api/carreras") ||
+                path.startsWith("/api/materias")) {
             filterChain.doFilter(request, response);
             return;
         }
