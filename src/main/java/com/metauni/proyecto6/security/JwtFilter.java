@@ -2,6 +2,7 @@ package com.metauni.proyecto6.security;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.security.Keys;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -14,13 +15,16 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+import javax.crypto.SecretKey;
 import java.io.IOException;
 import java.util.List;
 
 @Component
 public class JwtFilter extends OncePerRequestFilter {
 
-    private final String SECRET = "metauni_secret_key_metauni_secret_key";
+    private final SecretKey SECRET = Keys.hmacShaKeyFor(
+            "metauni_secret_key_metauni_secret_key_extra_chars".getBytes()
+    );
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,

@@ -13,7 +13,9 @@ import java.util.Date;
 public class JwtUtil {
 
     // Clave secreta segura (mínimo 32 caracteres para HS256)
-    private final SecretKey SECRET = Keys.hmacShaKeyFor("metauni_secret_key_metauni_secret_key".getBytes());
+    private final SecretKey SECRET = Keys.hmacShaKeyFor(
+            "metauni_secret_key_metauni_secret_key_extra_chars".getBytes()
+    );
 
     // Generar token
     public String generateToken(String email, String rol) {
