@@ -55,11 +55,11 @@ public class JwtFilter extends OncePerRequestFilter {
 
 
         if (header == null || !header.startsWith("Bearer ")) {
-            System.out.println("❌ No hay token, bloqueando acceso");
-            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Token requerido");
+            System.out.println("ℹ️  No hay token, dejando seguir");
+            filterChain.doFilter(request, response);
             return;
         }
-        // ============================
+        // =============================================
 
         String token = header.substring(7);
 
