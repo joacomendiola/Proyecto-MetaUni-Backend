@@ -26,19 +26,38 @@ public class UsuarioController {
 
     @PutMapping("/{id}")
     public Usuario editar(@PathVariable Long id, @RequestBody Usuario usuarioActualizado) {
-        Usuario usuarioExistente = usuarioRepo.findById(id)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+        System.out.println("🔍 UsuarioController - PUT /usuarios/" + id);
+        System.out.println("🔍 Datos recibidos: " + usuarioActualizado);
 
-        //  Actualizar solo los campos que vienen en el request
-        if (usuarioActualizado.getNombre() != null) {
-            usuarioExistente.setNombre(usuarioActualizado.getNombre());
-        }
-        if (usuarioActualizado.getEmail() != null) {
-            usuarioExistente.setEmail(usuarioActualizado.getEmail());
-        }
+        try {
+            // CON LOGS DE BÚSQUEDA
+            System.out.println("🔍 Buscando usuario con ID: " + id);
+            Usuario usuarioExistente = usuarioRepo.findById(id)
+                    .orElseThrow(() -> {
+                        System.out.println("❌ NO se encontró usuario con ID: " + id);
+                        return new RuntimeException("Usuario no encontrado");
+                    });
+            System.out.println("✅ Usuario encontrado: " + usuarioExistente.getEmail());
 
-        //  NO actualizar password ni rol aca
-        return usuarioRepo.save(usuarioExistente);
+            // Actualizar campos
+            if (usuarioActualizado.getNombre() != null) {
+                System.out.println("📝 Actualizando nombre: " + usuarioActualizado.getNombre());
+                usuarioExistente.setNombre(usuarioActualizado.getNombre());
+            }
+            if (usuarioActualizado.getEmail() != null) {
+                System.out.println("📝 Actualizando email: " + usuarioActualizado.getEmail());
+                usuarioExistente.setEmail(usuarioActualizado.getEmail());
+            }
+
+            Usuario guardado = usuarioRepo.save(usuarioExistente);
+            System.out.println("✅ Usuario guardado exitosamente");
+            return guardado;
+
+        } catch (Exception e) {
+            System.out.println("❌ Error en UsuarioController: " + e.getMessage());
+            e.printStackTrace();
+            throw e;
+        }
     }
 
     @DeleteMapping("/{id}")
