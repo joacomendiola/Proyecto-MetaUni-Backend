@@ -53,13 +53,12 @@ public class JwtFilter extends OncePerRequestFilter {
         String header = request.getHeader("Authorization");
         System.out.println("🔍 Authorization header: " + (header != null ? "PRESENTE" : "FALTANTE"));
 
-
+        // ✅ VERSIÓN QUE FUNCIONA - Dejar seguir si no hay token
         if (header == null || !header.startsWith("Bearer ")) {
             System.out.println("ℹ️  No hay token, dejando seguir");
             filterChain.doFilter(request, response);
             return;
         }
-        // =============================================
 
         String token = header.substring(7);
 

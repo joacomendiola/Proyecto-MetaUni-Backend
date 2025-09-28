@@ -3,16 +3,12 @@ package com.metauni.proyecto6.controller;
 import com.metauni.proyecto6.model.Usuario;
 import com.metauni.proyecto6.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.security.core.Authentication;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @RestController
-@RequestMapping("/api/usuarios")  // ← CORREGIR: agregar /api/
+@RequestMapping("/api/usuarios")
 @RequiredArgsConstructor
 public class UsuarioController {
 
@@ -30,26 +26,30 @@ public class UsuarioController {
 
     @PutMapping("/{id}")
     public Usuario editar(@PathVariable Long id, @RequestBody Usuario usuarioActualizado) {
-        System.out.println("🔍 PUT /usuarios/" + id);
+        System.out.println("✅ PUT /api/usuarios/" + id + " - Editando perfil");
 
         try {
             // 1. Buscar usuario
             Usuario usuarioExistente = usuarioRepo.findById(id)
                     .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
-            // 2. Actualizar campos
+            // 2. Actualizar campos permitidos
             if (usuarioActualizado.getNombre() != null) {
+                System.out.println("📝 Actualizando nombre: " + usuarioActualizado.getNombre());
                 usuarioExistente.setNombre(usuarioActualizado.getNombre());
             }
             if (usuarioActualizado.getEmail() != null) {
+                System.out.println("📝 Actualizando email: " + usuarioActualizado.getEmail());
                 usuarioExistente.setEmail(usuarioActualizado.getEmail());
             }
 
-            // 3. Guardar
-            return usuarioRepo.save(usuarioExistente);
+            // 3. Guardar cambios
+            Usuario guardado = usuarioRepo.save(usuarioExistente);
+            System.out.println("✅ Perfil actualizado exitosamente");
+            return guardado;
 
         } catch (Exception e) {
-            System.out.println("❌ Error: " + e.getMessage());
+            System.out.println("❌ Error actualizando perfil: " + e.getMessage());
             throw e;
         }
     }
