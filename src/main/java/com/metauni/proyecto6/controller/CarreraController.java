@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -136,14 +137,23 @@ public class CarreraController {
         }
     }
 
-    //  DELETE - Eliminar carrera (COMPATIBLE)
+    // DELETE - Eliminar carrera
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteCarrera(@PathVariable Long id) {
         try {
-            carreraRepo.deleteById(id);
-            return ResponseEntity.ok().build();
+            System.out.println("🎯 DELETE /api/carreras/" + id);
+
+            if (carreraRepo.existsById(id)) {
+                carreraRepo.deleteById(id);
+                System.out.println("✅ Carrera eliminada: " + id);
+                return ResponseEntity.ok().build();
+            } else {
+                System.out.println("❌ Carrera no encontrada: " + id);
+                return ResponseEntity.notFound().build();
+            }
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Error al eliminar carrera: " + e.getMessage());
+            System.out.println("❌ Error eliminando carrera: " + e.getMessage());
+            return ResponseEntity.badRequest().body("Error al eliminar carrera");
         }
     }
 }
