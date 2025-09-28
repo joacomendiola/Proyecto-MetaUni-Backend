@@ -33,7 +33,7 @@ public class JwtFilter extends OncePerRequestFilter {
 
         System.out.println("🔍 JwtFilter - " + request.getMethod() + " " + request.getServletPath());
 
-        // Dejar pasar preflight OPTIONS
+        // 1. Dejar pasar preflight OPTIONS
         if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
             System.out.println("✅ Pasando OPTIONS preflight");
             filterChain.doFilter(request, response);
@@ -42,24 +42,25 @@ public class JwtFilter extends OncePerRequestFilter {
 
         String path = request.getServletPath();
 
-        // Dejar libre SOLO endpoints públicos
+        // 2. Dejar libre endpoints públicos
         if (path.startsWith("/api/auth")) {
             System.out.println("✅ Pasando ruta pública: " + path);
             filterChain.doFilter(request, response);
             return;
         }
 
-        // Las demás rutas requieren autenticación
+        // 3. Para rutas protegidas, verificar token PERO si no hay, DEJAR SEGUIR
         String header = request.getHeader("Authorization");
         System.out.println("🔍 Authorization header: " + (header != null ? "PRESENTE" : "FALTANTE"));
 
-        // ✅ VERSIÓN QUE FUNCIONA - Dejar seguir si no hay token
+
         if (header == null || !header.startsWith("Bearer ")) {
             System.out.println("ℹ️  No hay token, dejando seguir");
-            filterChain.doFilter(request, response);
+            filterChain.doFilter(request, response);  // ← ESTO ANDABA
             return;
         }
 
+        // El resto del código igual...
         String token = header.substring(7);
 
         try {
@@ -71,7 +72,6 @@ public class JwtFilter extends OncePerRequestFilter {
             String email = claims.getSubject();
             String rol = claims.get("rol", String.class);
 
-            // Forzar prefijo ROLE_
             if (rol != null && !rol.startsWith("ROLE_")) {
                 rol = "ROLE_" + rol;
             }
@@ -80,9 +80,7 @@ public class JwtFilter extends OncePerRequestFilter {
             }
 
             if (email != null) {
-                List<GrantedAuthority> authorities =
-                        List.of(new SimpleGrantedAuthority(rol));
-
+                List<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority(rol));
                 UsernamePasswordAuthenticationToken auth =
                         new UsernamePasswordAuthenticationToken(email, null, authorities);
 
