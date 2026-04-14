@@ -70,9 +70,9 @@ public class UsuarioController {
             String nuevoToken = jwtUtil.generateToken(guardado.getEmail(), guardado.getRol());
             Map<String, Object> response = new HashMap<>();
             response.put("token", nuevoToken);
-            response.put("id", guardado.getId().toString());
+            response.put("id", guardado.getId());
             response.put("email", guardado.getEmail());
-            response.put("nombre", guardado.getNombre() != null ? guardado.getNombre() : "");
+            response.put("nombre", guardado.getNombre());
             response.put("rol", guardado.getRol());
             return ResponseEntity.ok(response);
         }
