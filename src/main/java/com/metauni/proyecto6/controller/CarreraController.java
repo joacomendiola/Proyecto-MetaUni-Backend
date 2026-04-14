@@ -178,7 +178,7 @@ public class CarreraController {
 
             carreraRepo.delete(carrera);
             System.out.println("✅ Carrera eliminada: " + id);
-            return ResponseEntity.ok().build();
+            return ResponseEntity.noContent().build();
         } catch (Exception e) {
             System.out.println("❌ Error eliminando carrera: " + e.getMessage());
             return ResponseEntity.badRequest().body("Error al eliminar carrera");

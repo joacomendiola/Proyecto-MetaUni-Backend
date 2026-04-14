@@ -3,13 +3,17 @@ package com.metauni.proyecto6.controller;
 import com.metauni.proyecto6.dto.UsuarioDTO;
 import com.metauni.proyecto6.model.Usuario;
 import com.metauni.proyecto6.repository.UsuarioRepository;
+import com.metauni.proyecto6.security.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.security.Principal;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @RestController
@@ -18,6 +22,7 @@ import java.util.stream.Collectors;
 public class UsuarioController {
 
     private final UsuarioRepository usuarioRepo;
+    private final JwtUtil jwtUtil;
 
     @GetMapping
     public List<UsuarioDTO> listar() {
@@ -34,7 +39,7 @@ public class UsuarioController {
     }
 
     @PutMapping("/{id}")
-    public UsuarioDTO editar(@PathVariable Long id, @RequestBody Usuario usuarioActualizado, Principal principal) {
+    public ResponseEntity<?> editar(@PathVariable Long id, @RequestBody Usuario usuarioActualizado, Principal principal) {
         System.out.println("✅ PUT /api/usuarios/" + id + " - Editando perfil");
 
         Usuario usuarioExistente = usuarioRepo.findById(id)
@@ -46,21 +51,37 @@ public class UsuarioController {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No tienes permiso para editar este usuario");
         }
 
+        boolean emailCambiado = false;
         if (usuarioActualizado.getNombre() != null) {
             System.out.println("📝 Actualizando nombre: " + usuarioActualizado.getNombre());
             usuarioExistente.setNombre(usuarioActualizado.getNombre());
         }
-        if (usuarioActualizado.getEmail() != null) {
+        if (usuarioActualizado.getEmail() != null && !usuarioActualizado.getEmail().equals(usuarioExistente.getEmail())) {
             System.out.println("📝 Actualizando email: " + usuarioActualizado.getEmail());
             usuarioExistente.setEmail(usuarioActualizado.getEmail());
+            emailCambiado = true;
         }
 
         Usuario guardado = usuarioRepo.save(usuarioExistente);
         System.out.println("✅ Perfil actualizado exitosamente");
-        return toDTO(guardado);
+
+        // Si el email cambió, el JWT anterior ya no es válido → devolver uno nuevo
+        if (emailCambiado) {
+            String nuevoToken = jwtUtil.generateToken(guardado.getEmail(), guardado.getRol());
+            Map<String, Object> response = new HashMap<>();
+            response.put("token", nuevoToken);
+            response.put("id", guardado.getId());
+            response.put("email", guardado.getEmail());
+            response.put("nombre", guardado.getNombre());
+            response.put("rol", guardado.getRol());
+            return ResponseEntity.ok(response);
+        }
+
+        return ResponseEntity.ok(toDTO(guardado));
     }
 
     @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     public void eliminar(@PathVariable Long id, Principal principal) {
         Usuario usuarioExistente = usuarioRepo.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuario no encontrado"));

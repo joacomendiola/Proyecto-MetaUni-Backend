@@ -68,6 +68,7 @@ public class MateriaController {
 
     //  eliminar materia (validando dueño)
     @DeleteMapping("/{id}")
+    @ResponseStatus(org.springframework.http.HttpStatus.NO_CONTENT)
     public void eliminar(@PathVariable Long id, Principal principal) {
         Materia existente = materiaRepo.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Materia no encontrada"));
