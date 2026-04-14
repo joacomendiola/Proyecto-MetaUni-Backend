@@ -4,12 +4,16 @@ import com.metauni.proyecto6.dto.CarreraDTO;
 import com.metauni.proyecto6.dto.MateriaDTO;
 import com.metauni.proyecto6.model.Carrera;
 import com.metauni.proyecto6.model.Materia;
+import com.metauni.proyecto6.model.Usuario;
 import com.metauni.proyecto6.repository.CarreraRepository;
+import com.metauni.proyecto6.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
-import java.util.ArrayList;
+import java.security.Principal;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -19,20 +23,25 @@ import java.util.stream.Collectors;
 public class CarreraController {
 
     private final CarreraRepository carreraRepo;
+    private final UsuarioRepository usuarioRepo;
 
-    //  POST - Crear carrera (COMPATIBLE con el frontend actual)
+    //  POST - Crear carrera (asigna usuario desde token)
     @PostMapping
-    public ResponseEntity<?> createCarrera(@RequestBody Carrera carrera) {
+    public ResponseEntity<?> createCarrera(@RequestBody Carrera carrera, Principal principal) {
         try {
+            Usuario usuario = usuarioRepo.findByEmail(principal.getName());
+            if (usuario == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Usuario no encontrado");
+            }
+            carrera.setUsuario(usuario);
             Carrera saved = carreraRepo.save(carrera);
 
-            // Convertir a DTO para evitar relaciones circulares
             CarreraDTO dto = new CarreraDTO(
                     saved.getId(),
                     saved.getNombre(),
                     saved.getTotalMaterias(),
                     saved.getColorBarra(),
-                    saved.getUsuario() != null ? saved.getUsuario().getId() : null
+                    saved.getUsuario().getId()
             );
 
             return ResponseEntity.ok(dto);
@@ -41,11 +50,15 @@ public class CarreraController {
         }
     }
 
-    //  GET - Todas las carreras (COMPATIBLE)
+    //  GET - Todas las carreras del usuario autenticado
     @GetMapping
-    public ResponseEntity<?> getCarreras() {
+    public ResponseEntity<?> getCarreras(Principal principal) {
         try {
-            List<CarreraDTO> carreras = carreraRepo.findAll().stream()
+            Usuario usuario = usuarioRepo.findByEmail(principal.getName());
+            if (usuario == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Usuario no encontrado");
+            }
+            List<CarreraDTO> carreras = carreraRepo.findByUsuario(usuario).stream()
                     .map(c -> {
                         CarreraDTO dto = new CarreraDTO(
                                 c.getId(),
@@ -55,7 +68,6 @@ public class CarreraController {
                                 c.getUsuario() != null ? c.getUsuario().getId() : null
                         );
 
-                        // Opcional: incluir materias como DTOs
                         if (c.getMaterias() != null) {
                             dto.setMaterias(c.getMaterias().stream()
                                     .map(m -> new MateriaDTO(
@@ -77,12 +89,16 @@ public class CarreraController {
         }
     }
 
-    //  GET - Carrera por ID (COMPATIBLE)
+    //  GET - Carrera por ID (validando dueño)
     @GetMapping("/{id}")
-    public ResponseEntity<?> getCarrera(@PathVariable Long id) {
+    public ResponseEntity<?> getCarrera(@PathVariable Long id, Principal principal) {
         try {
             Carrera carrera = carreraRepo.findById(id)
-                    .orElseThrow(() -> new RuntimeException("Carrera no encontrada"));
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Carrera no encontrada"));
+
+            if (carrera.getUsuario() == null || !carrera.getUsuario().getEmail().equals(principal.getName())) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("No tienes acceso a esta carrera");
+            }
 
             CarreraDTO dto = new CarreraDTO(
                     carrera.getId(),
@@ -92,7 +108,6 @@ public class CarreraController {
                     carrera.getUsuario() != null ? carrera.getUsuario().getId() : null
             );
 
-            // Incluir materias si existen
             if (carrera.getMaterias() != null) {
                 dto.setMaterias(carrera.getMaterias().stream()
                         .map(m -> new MateriaDTO(
@@ -105,17 +120,23 @@ public class CarreraController {
             }
 
             return ResponseEntity.ok(dto);
+        } catch (ResponseStatusException e) {
+            throw e;
         } catch (Exception e) {
             return ResponseEntity.notFound().build();
         }
     }
 
-    //  PUT - Actualizar carrera (COMPATIBLE)
+    //  PUT - Actualizar carrera (validando dueño)
     @PutMapping("/{id}")
-    public ResponseEntity<?> updateCarrera(@PathVariable Long id, @RequestBody Carrera carreraDetails) {
+    public ResponseEntity<?> updateCarrera(@PathVariable Long id, @RequestBody Carrera carreraDetails, Principal principal) {
         try {
             Carrera carrera = carreraRepo.findById(id)
-                    .orElseThrow(() -> new RuntimeException("Carrera no encontrada"));
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Carrera no encontrada"));
+
+            if (carrera.getUsuario() == null || !carrera.getUsuario().getEmail().equals(principal.getName())) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("No tienes acceso a esta carrera");
+            }
 
             carrera.setNombre(carreraDetails.getNombre());
             carrera.setColorBarra(carreraDetails.getColorBarra());
@@ -132,28 +153,36 @@ public class CarreraController {
             );
 
             return ResponseEntity.ok(dto);
+        } catch (ResponseStatusException e) {
+            throw e;
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Error al actualizar carrera: " + e.getMessage());
         }
     }
 
-    // DELETE - Eliminar carrera
+    // DELETE - Eliminar carrera (validando dueño)
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteCarrera(@PathVariable Long id) {
+    public ResponseEntity<?> deleteCarrera(@PathVariable Long id, Principal principal) {
         try {
             System.out.println("🎯 DELETE /api/carreras/" + id);
 
-            if (carreraRepo.existsById(id)) {
-                carreraRepo.deleteById(id);
-                System.out.println("✅ Carrera eliminada: " + id);
-                return ResponseEntity.ok().build();
-            } else {
+            Carrera carrera = carreraRepo.findById(id).orElse(null);
+            if (carrera == null) {
                 System.out.println("❌ Carrera no encontrada: " + id);
                 return ResponseEntity.notFound().build();
             }
+
+            if (carrera.getUsuario() == null || !carrera.getUsuario().getEmail().equals(principal.getName())) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("No tienes acceso a esta carrera");
+            }
+
+            carreraRepo.delete(carrera);
+            System.out.println("✅ Carrera eliminada: " + id);
+            return ResponseEntity.ok().build();
         } catch (Exception e) {
             System.out.println("❌ Error eliminando carrera: " + e.getMessage());
             return ResponseEntity.badRequest().body("Error al eliminar carrera");
         }
     }
 }
+
