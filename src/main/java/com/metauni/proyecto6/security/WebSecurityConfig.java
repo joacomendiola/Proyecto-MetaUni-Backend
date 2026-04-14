@@ -35,14 +35,15 @@ public class WebSecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers("/api/auth/**").permitAll()
-                        .requestMatchers(HttpMethod.PUT, "/api/usuarios/**").authenticated() // ← CON /api/
-                        .requestMatchers(HttpMethod.GET, "/api/carreras/**").authenticated() // ← CON /api/
-                        .requestMatchers(HttpMethod.POST, "/api/carreras").authenticated()   // ← CON /api/
-                        .requestMatchers(HttpMethod.DELETE, "/api/carreras/**").authenticated() // ← CON /api/
-                        .requestMatchers(HttpMethod.GET, "/api/materias/**").authenticated() // ← NUEVO
-                        .requestMatchers(HttpMethod.POST, "/api/materias/**").authenticated() // ← NUEVO
-                        .requestMatchers(HttpMethod.PUT, "/api/materias/**").authenticated() // ← NUEVO
-                        .requestMatchers(HttpMethod.DELETE, "/api/materias/**").authenticated() // ← NUEVO
+                        .requestMatchers(HttpMethod.GET, "/api/usuarios").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/usuarios/**").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/api/carreras/**").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/api/carreras").authenticated()
+                        .requestMatchers(HttpMethod.DELETE, "/api/carreras/**").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/api/materias/**").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/api/materias/**").authenticated()
+                        .requestMatchers(HttpMethod.PUT, "/api/materias/**").authenticated()
+                        .requestMatchers(HttpMethod.DELETE, "/api/materias/**").authenticated()
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));

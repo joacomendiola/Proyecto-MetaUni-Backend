@@ -4,6 +4,7 @@ import com.metauni.proyecto6.model.Usuario;
 import com.metauni.proyecto6.repository.UsuarioRepository;
 import com.metauni.proyecto6.security.JwtUtil;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -22,20 +23,24 @@ public class AuthController {
     private final JwtUtil jwtUtil;
 
     @PostMapping("/register")
-    public Map<String, String> register(@RequestBody Usuario usuario) {
-        usuario.setPassword(passwordEncoder.encode(usuario.getPassword()));
-        usuario.setRol("ROLE_USER");
-        Usuario saved = usuarioRepo.save(usuario);
+    public ResponseEntity<?> register(@RequestBody Usuario usuario) {
+        try {
+            usuario.setPassword(passwordEncoder.encode(usuario.getPassword()));
+            usuario.setRol("ROLE_USER");
+            Usuario saved = usuarioRepo.save(usuario);
 
-        String token = jwtUtil.generateToken(saved.getEmail(), saved.getRol());
+            String token = jwtUtil.generateToken(saved.getEmail(), saved.getRol());
 
-        return Map.of(
-                "token", token,
-                "email", saved.getEmail(),
-                "rol", saved.getRol(),
-                "nombre", saved.getNombre() != null ? saved.getNombre() : "",
-                "id", saved.getId().toString() //  Devolver el ID
-        );
+            return ResponseEntity.ok(Map.of(
+                    "token", token,
+                    "email", saved.getEmail(),
+                    "rol", saved.getRol(),
+                    "nombre", saved.getNombre() != null ? saved.getNombre() : "",
+                    "id", saved.getId().toString()
+            ));
+        } catch (DataIntegrityViolationException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body("El email ya está registrado");
+        }
     }
 
     @PostMapping("/login")

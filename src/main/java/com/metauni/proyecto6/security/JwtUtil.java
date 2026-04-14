@@ -4,6 +4,7 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
@@ -12,34 +13,36 @@ import java.util.Date;
 @Component
 public class JwtUtil {
 
-    // Clave secreta segura (mínimo 32 caracteres para HS256)
-    private final SecretKey SECRET = Keys.hmacShaKeyFor(
-            "metauni_secret_key_metauni_secret_key_extra_chars".getBytes()
-    );
+    @Value("${jwt.secret}")
+    private String jwtSecret;
+
+    private SecretKey getSecretKey() {
+        return Keys.hmacShaKeyFor(jwtSecret.getBytes());
+    }
 
     // Generar token
     public String generateToken(String email, String rol) {
-        //  Asegurar prefijo ROLE_
-        if (rol != null && !rol.startsWith("ROLE_")) {
-            rol = "ROLE_" + rol;
-        }
+        // Asegurar prefijo ROLE_ (null check primero)
         if (rol == null) {
-            rol = "ROLE_USER"; // valor por defecto
+            rol = "ROLE_USER";
+        }
+        if (!rol.startsWith("ROLE_")) {
+            rol = "ROLE_" + rol;
         }
 
         return Jwts.builder()
                 .setSubject(email)
-                .claim("rol", rol)  // Guardamos el rol con formato correcto
+                .claim("rol", rol)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60)) // 1 hora
-                .signWith(SECRET, SignatureAlgorithm.HS256)
+                .signWith(getSecretKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
 
     // Extraer claims de un token
     public Claims extractClaims(String token) {
         return Jwts.parserBuilder()
-                .setSigningKey(SECRET)
+                .setSigningKey(getSecretKey())
                 .build()
                 .parseClaimsJws(token)
                 .getBody();
