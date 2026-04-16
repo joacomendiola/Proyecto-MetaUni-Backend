@@ -68,7 +68,8 @@ public class WebSecurityConfig {
         config.setAllowedOrigins(List.of(
                 "https://metauni.onrender.com",          // tu frontend en Render
                 "https://proyecto-metauni.onrender.com", // dominio alternativo
-                "http://localhost:3000"                  // dev local
+                "http://localhost:3000",                  // dev local
+                "https://proyecto-meta-uni-frontend.vercel.app" //Dominio Vercel
         ));
         config.setAllowedMethods(Arrays.asList("GET","POST","PUT","DELETE","OPTIONS"));
         config.setAllowedHeaders(Arrays.asList("Authorization","Content-Type"));
