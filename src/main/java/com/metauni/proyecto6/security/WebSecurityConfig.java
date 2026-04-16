@@ -31,7 +31,7 @@ public class WebSecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(csrf -> csrf.disable())
-                .cors(cors -> {})
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers("/api/auth/**").permitAll()
@@ -65,11 +65,11 @@ public class WebSecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of(
-                "https://metauni.onrender.com",          // tu frontend en Render
-                "https://proyecto-metauni.onrender.com", // dominio alternativo
-                "http://localhost:3000",                  // dev local
-                "https://proyecto-meta-uni-frontend.vercel.app" //Dominio Vercel
+        config.setAllowedOriginPatterns(List.of(
+                "https://*.onrender.com",  // frontend en Render
+                "http://localhost:3000",   // dev local
+                "http://localhost:5173",   // para usar Vite en local
+                "https://*.vercel.app"     //Dominio Vercel
         ));
         config.setAllowedMethods(Arrays.asList("GET","POST","PUT","DELETE","OPTIONS"));
         config.setAllowedHeaders(Arrays.asList("Authorization","Content-Type"));
