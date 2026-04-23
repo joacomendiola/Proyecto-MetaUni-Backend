@@ -22,16 +22,6 @@ public class AuthController {
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
 
-    @RequestMapping(value = "/register", method = RequestMethod.OPTIONS)
-    public ResponseEntity<?> registerOptions() {
-        return ResponseEntity.ok().build();
-    }
-
-    @RequestMapping(value = "/login", method = RequestMethod.OPTIONS)
-    public ResponseEntity<?> loginOptions() {
-        return ResponseEntity.ok().build();
-    }
-
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody Usuario usuario) {
         try {
