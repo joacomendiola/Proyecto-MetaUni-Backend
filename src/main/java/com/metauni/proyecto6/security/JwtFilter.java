@@ -34,8 +34,7 @@ public class JwtFilter extends OncePerRequestFilter {
 
         // 1. Dejar pasar preflight OPTIONS
         if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
-            System.out.println("✅ Pasando OPTIONS preflight");
-            filterChain.doFilter(request, response);
+            response.setStatus(HttpServletResponse.SC_OK);
             return;
         }
 

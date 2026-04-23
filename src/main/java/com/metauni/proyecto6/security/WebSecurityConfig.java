@@ -2,8 +2,6 @@ package com.metauni.proyecto6.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.Ordered;
-import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
@@ -16,7 +14,6 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import org.springframework.web.filter.CorsFilter;
 
 import java.util.Arrays;
 import java.util.List;
@@ -65,11 +62,6 @@ public class WebSecurityConfig {
         return authConfig.getAuthenticationManager();
     }
 
-    @Bean
-    @Order(Ordered.HIGHEST_PRECEDENCE)
-    public CorsFilter corsFilter() {
-        return new CorsFilter(corsConfigurationSource());
-    }
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
@@ -80,8 +72,9 @@ public class WebSecurityConfig {
                 "http://localhost:5173",   // para usar Vite en local
                 "https://*.vercel.app"     //Dominio Vercel
         ));
-        config.setAllowedMethods(Arrays.asList("GET","POST","PUT","DELETE","OPTIONS"));
-        config.setAllowedHeaders(Arrays.asList("Authorization","Content-Type"));
+        config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
+        config.setAllowedHeaders(List.of("*"));
+        config.setExposedHeaders(List.of("Authorization"));
         config.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
